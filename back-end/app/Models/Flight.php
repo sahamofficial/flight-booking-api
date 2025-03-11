@@ -10,7 +10,7 @@ class Flight extends Model
     use HasFactory;
     protected $fillable = [
         'id',
-        'airline',
+        'airline_id',
         'flight_number',
         'departure',
         'destination',
@@ -25,5 +25,6 @@ class Flight extends Model
     {
         return $this->hasMany(Booking::class);
     }
+    
 
 }

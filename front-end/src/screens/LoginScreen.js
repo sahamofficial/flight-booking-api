@@ -1,26 +1,19 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity } from 'react-native';
 import { login } from '../../api/api';
+import styles from '../styles/loginstyles';
 
 const LoginScreen = ({ navigation }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
     const handleLogin = async () => {
-        const userData = {
-            email: email,
-            password: password,
-        };
+        const userData = { email, password };
 
         try {
-            // Make the login request
             const response = await login(userData);
-
-            // Log the entire response for debugging
             console.log('Login successful:', response);
-
-            // Navigate to Profile screen and pass the response object
-            navigation.replace('Profile', { response });  // Pass the response object to Profile
+            navigation.replace('Home', { response });
         } catch (error) {
             console.log('Error during login:', error.response?.data);
             alert(error.response?.data?.message || 'Login failed');
@@ -28,13 +21,34 @@ const LoginScreen = ({ navigation }) => {
     };
 
     return (
-        <View>
-            <Text>Email:</Text>
-            <TextInput value={email} onChangeText={setEmail} />
-            <Text>Password:</Text>
-            <TextInput value={password} onChangeText={setPassword} secureTextEntry />
-            <Button title="Login" onPress={handleLogin} />
-            <Button title="Register" onPress={() => navigation.navigate('Register')} />
+        <View style={styles.container}>
+            <Text style={styles.title}>Login</Text>
+
+            {/* <Text style={styles.label}>Email:</Text> */}
+            <TextInput
+                style={styles.input}
+                value={email}
+                onChangeText={setEmail}
+                placeholder="Enter your email"
+                keyboardType="email-address"
+            />
+
+            {/* <Text style={styles.label}>Password:</Text> */}
+            <TextInput
+                style={styles.input}
+                value={password}
+                onChangeText={setPassword}
+                placeholder="Enter your password"
+                secureTextEntry
+            />
+
+            <TouchableOpacity style={styles.button} onPress={handleLogin}>
+                <Text style={styles.buttonText}>Login</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={[styles.button, styles.registerButton]} onPress={() => navigation.navigate('Register')}>
+                <Text style={styles.buttonText}>Register</Text>
+            </TouchableOpacity>
         </View>
     );
 };

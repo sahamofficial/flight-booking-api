@@ -23,6 +23,8 @@ Route::get('/airlines', [AirlineController::class, 'index']);
 Route::get('/airlines/{id}', [AirlineController::class, 'show']); 
 Route::put('/airlines/{id}', [AirlineController::class, 'update']); 
 Route::delete('/airlines/{id}', [AirlineController::class, 'destroy']); 
+Route::get('/flights/search', [FlightController::class, 'searchFlights']);
+Route::get('/flights/locations', [FlightController::class, 'getLocations']);
 
 // Protected Routes (Requires authentication)
 Route::middleware(['auth:sanctum'])->group(function () {  
@@ -31,6 +33,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/flights', [FlightController::class, 'store']);
     Route::put('/flights/{id}', [FlightController::class, 'update']);
     Route::delete('/flights/{id}', [FlightController::class, 'destroy']);
+    Route::get('/flights', [FlightController::class, 'index']); // Paginated flight list
+
 
     // Booking Routes
     Route::post('/book-flight', [BookingController::class, 'store']);

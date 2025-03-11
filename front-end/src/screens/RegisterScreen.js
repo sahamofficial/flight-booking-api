@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { register } from '../../api/api';
+import styles from '../styles/registerstyles'; // Import the new styles
 
 const RegisterScreen = ({ navigation }) => {
     const [name, setName] = useState('');
@@ -10,45 +11,50 @@ const RegisterScreen = ({ navigation }) => {
 
     const handleRegister = async () => {
         const userData = {
-            name: name,
-            email: email,
-            password: password,
+            name,
+            email,
+            password,
             password_confirmation: passwordConfirmation,
         };
 
-        // Check if the password is at least 6 characters long
         if (password.length < 6) {
             alert('Password must be at least 6 characters long');
             return;
         }
 
-        console.log('User data being sent to API:', userData);  // Log the data to see it
-
         try {
             const response = await register(userData);
             console.log('Registration successful:', response);
-            navigation.replace('Login');
-
+            navigation.replace('Profile', { response });
         } catch (error) {
             console.log('Error during registration:', error.response?.data);
-            // Optionally, show the error message to the user
             alert(error.response?.data?.message || 'Registration failed');
         }
     };
 
-
-
     return (
-        <View>
-            <Text>Name:</Text>
-            <TextInput value={name} onChangeText={setName} autoCapitalize="words" />
-            <Text>Email:</Text>
-            <TextInput value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
-            <Text>Password:</Text>
-            <TextInput value={password} onChangeText={setPassword} secureTextEntry />
-            <Text>Confirm Password:</Text>
-            <TextInput value={passwordConfirmation} onChangeText={setPasswordConfirmation} secureTextEntry />
-            <Button title="Register" onPress={handleRegister} />
+        <View style={styles.container}>
+            <Text style={styles.title}>Register</Text>
+
+            {/* <Text style={styles.label}>Name:</Text> */}
+            <TextInput style={styles.input} value={name} onChangeText={setName} autoCapitalize="words" placeholder="Enter your name" />
+
+            {/* <Text style={styles.label}>Email:</Text> */}
+            <TextInput style={styles.input} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" placeholder="Enter your email" />
+
+            {/* <Text style={styles.label}>Password:</Text> */}
+            <TextInput style={styles.input} value={password} onChangeText={setPassword} secureTextEntry placeholder="Enter your password" />
+
+            {/* <Text style={styles.label}>Confirm Password:</Text> */}
+            <TextInput style={styles.input} value={passwordConfirmation} onChangeText={setPasswordConfirmation} secureTextEntry placeholder="Confirm your password" />
+
+            <TouchableOpacity style={styles.button} onPress={handleRegister}>
+                <Text style={styles.buttonText}>Register</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={[styles.button, styles.loginButton]} onPress={() => navigation.navigate('Login')}>
+                <Text style={styles.buttonText}>Back to Login</Text>
+            </TouchableOpacity>
         </View>
     );
 };
