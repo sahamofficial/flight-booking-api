@@ -99,36 +99,33 @@ class FlightController extends Controller
 
     // Multi-City Search
     public function searchFlights(Request $request)
-    {
-        $departures = $request->input('departures');
-        $destinations = $request->input('destinations');
-        $dates = $request->input('dates');
+{
+    $validatedData = $request->validate([
+        'departure0' => 'required|string|min:1',
+        'destination0' => 'required|string|min:1',
+        'date0' => 'required|date_format:Y-m-d',
+        'return_date' => 'nullable|date_format:Y-m-d',
+    ]);
 
-        if (!$departures || !$destinations || !$dates || count($departures) !== count($destinations) || count($departures) !== count($dates)) {
-            return response()->json(['message' => 'Invalid search parameters'], 400);
-        }
+    $departure = $validatedData['departure0'];
+    $destination = $validatedData['destination0'];
+    $date = $validatedData['date0'];
+    $returnDate = $validatedData['return_date'] ?? null;
 
-        $flights = [];
+    $flights = Flight::where('departure', $departure)
+                     ->where('destination', $destination)
+                     ->whereDate('departure_time', $date)
+                     ->get();
 
-        foreach ($departures as $index => $departure) {
-            $destination = $destinations[$index];
-            $date = Carbon::createFromFormat('Y-m-d', $dates[$index])->startOfDay();
-
-            $flightResults = Flight::where('departure', $departure)
-                ->where('destination', $destination)
-                ->whereDate('departure_time', '=', $date)
-                ->get();
-
-            $flights[] = [
-                'from' => $departure,
-                'to' => $destination,
-                'date' => $dates[$index],
-                'flights' => $flightResults
-            ];
-        }
-
-        return response()->json($flights);
+    if ($flights->isEmpty()) {
+        return response()->json(['message' => 'No flights found'], 404);
     }
+
+    return response()->json($flights);
+}
+
+
+    
 
     // Get unique locations
     public function getLocations()

@@ -14,6 +14,7 @@ const HomeScreen = () => {
     const [paymentType, setPaymentType] = useState("Credit Card");
     const [loading, setLoading] = useState(false);
     const [locations, setLocations] = useState({ departures: [], destinations: [] });
+    const [flights, setFlights] = useState([]);
 
     useEffect(() => {
         axios.get("http://127.0.0.1:8000/api/flights/locations")
@@ -44,30 +45,42 @@ const HomeScreen = () => {
 
     const handleSearch = () => {
         setLoading(true);
+    
         let queryParams = "";
-
+        
         if (tripType === "multi-city") {
             multiCityFlights.forEach((flight, index) => {
+                if (!flight.departure || !flight.destination) {
+                    alert("Please select a departure and destination for all flights.");
+                    setLoading(false);
+                    return;
+                }
                 queryParams += `departure${index}=${flight.departure}&destination${index}=${flight.destination}&date${index}=${flight.date.toISOString().split('T')[0]}&`;
             });
         } else {
-            // Handle one-way or round-trip search
-            queryParams = `departure0=${multiCityFlights[0].departure}&destination0=${multiCityFlights[0].destination}&date0=${multiCityFlights[0].date.toISOString().split('T')[0]}&`;
-
-            if (tripType === "round-trip") {
-                queryParams += `return_date=${multiCityFlights[1]?.date.toISOString().split('T')[0]}`;
+            if (!multiCityFlights[0].departure || !multiCityFlights[0].destination) {
+                alert("Please select a departure and destination.");
+                setLoading(false);
+                return;
+            }
+    
+            queryParams = `departure0=${multiCityFlights[0].departure}&destination0=${multiCityFlights[0].destination}&date0=${multiCityFlights[0].date.toISOString().split('T')[0]}`;
+    
+            if (tripType === "round-trip" && multiCityFlights[1]?.date) {
+                queryParams += `&return_date=${multiCityFlights[1].date.toISOString().split('T')[0]}`;
             }
         }
-
+    
+        console.log("Searching flights with params:", queryParams);
+    
         axios.get(`http://127.0.0.1:8000/api/flights/search?${queryParams}`)
             .then(response => {
-                // Handle response (you can set flights here)
+                console.log("Flights found:", response.data);
+                setFlights(response.data);
             })
             .catch(error => console.error("Error fetching flights:", error))
             .finally(() => setLoading(false));
     };
-
-    const [flights, setFlights] = useState([]);
 
     return (
         <ScrollView style={styles.container}>
@@ -81,7 +94,6 @@ const HomeScreen = () => {
                     </TouchableOpacity>
                 ))}
             </View>
-
 
             {tripType === "Multi-City" ? (
                 <>
@@ -170,6 +182,21 @@ const HomeScreen = () => {
             </TouchableOpacity>
 
             {loading && <ActivityIndicator size="large" color="#28a745" />}
+
+            {/* Display search results */}
+            {flights.length > 0 && (
+                <View style={styles.resultsContainer}>
+                    <Text style={styles.resultsTitle}>Search Results:</Text>
+                    {flights.map((flight, index) => (
+                        <View key={index} style={styles.flightItem}>
+                            <Text style={styles.flightText}>Departure: {flight.departure}</Text>
+                            <Text style={styles.flightText}>Destination: {flight.destination}</Text>
+                            <Text style={styles.flightText}>Date: {flight.date}</Text>
+                            <Text style={styles.flightText}>Price: ${flight.price}</Text>
+                        </View>
+                    ))}
+                </View>
+            )}
         </ScrollView>
     );
 };
